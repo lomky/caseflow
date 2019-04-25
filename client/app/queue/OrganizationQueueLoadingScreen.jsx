@@ -15,6 +15,10 @@ import {
   setActiveOrganization
 } from './uiReducer/uiActions';
 
+// TODO: What do we want to do?
+// Hit back-end, what data do we need?
+// Receive config object. Render from the config
+
 class OrganizationQueueLoadingScreen extends React.PureComponent {
   // TODO: Short-circuit this request if we already have the tasks for this organization's queue.
   createLoadPromise = () => ApiUtil.get(this.props.urlToLoad, { timeout: { response: 5 * 60 * 1000 } }).then(

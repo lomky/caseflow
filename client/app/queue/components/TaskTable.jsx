@@ -34,6 +34,38 @@ import {
 import COPY from '../../../COPY.json';
 import CO_LOCATED_ADMIN_ACTIONS from '../../../constants/CO_LOCATED_ADMIN_ACTIONS.json';
 
+const actionNameOfTask = (task) => CO_LOCATED_ADMIN_ACTIONS[task.label] || _.startCase(task.label);
+
+export const caseHearingColumnFunction = () => ({
+  header: '',
+  valueFunction: (task) => <HearingBadge task={task} />
+});
+
+// TODO: Does not handle the case where we hide if the task does not have a DAS record (attorneys tables).
+export const caseDetailsColumnFunction = (userRole) => ({
+  header: COPY.CASE_LIST_TABLE_VETERAN_NAME_COLUMN_TITLE,
+  valueFunction: (task) => <CaseDetailsLink task={task} appeal={task.appeal} userRole={userRole} />,
+  getSortValue: (task) => {
+    const vetName = task.appeal.veteranFullName.split(' ');
+    // only take last, first names. ignore middle names/initials
+
+    return `${_.last(vetName)} ${vetName[0]}`;
+  }
+});
+
+export const caseTaskColumnFunction = (tableData) => ({
+  header: COPY.CASE_LIST_TABLE_TASKS_COLUMN_TITLE,
+  enableFilter: true,
+  tableData,
+  columnName: 'label',
+  anyFiltersAreSet: true,
+  customFilterLabels: CO_LOCATED_ADMIN_ACTIONS,
+  label: 'Filter by task',
+  valueName: 'label',
+  valueFunction: (task) => actionNameOfTask(task),
+  getSortValue: (task) => actionNameOfTask(task)
+});
+
 export class TaskTableUnconnected extends React.PureComponent {
   getKeyForRow = (rowNumber, object) => object.uniqueId
 
@@ -58,10 +90,7 @@ export class TaskTableUnconnected extends React.PureComponent {
   collapseColumnIfNoDASRecord = (task) => this.taskHasDASRecord(task) ? 1 : 0
 
   caseHearingColumn = () => {
-    return this.props.includeHearingBadge ? {
-      header: '',
-      valueFunction: (task) => <HearingBadge task={task} />
-    } : null;
+    return this.props.includeHearingBadge ? caseHearingColumnFunction() : null;
   }
 
   caseSelectColumn = () => {
@@ -80,37 +109,11 @@ export class TaskTableUnconnected extends React.PureComponent {
   }
 
   caseDetailsColumn = () => {
-    return this.props.includeDetailsLink ? {
-      header: COPY.CASE_LIST_TABLE_VETERAN_NAME_COLUMN_TITLE,
-      valueFunction: (task) => <CaseDetailsLink
-        task={task}
-        appeal={task.appeal}
-        userRole={this.props.userRole}
-        disabled={!this.taskHasDASRecord(task)} />,
-      getSortValue: (task) => {
-        const vetName = task.appeal.veteranFullName.split(' ');
-        // only take last, first names. ignore middle names/initials
-
-        return `${_.last(vetName)} ${vetName[0]}`;
-      }
-    } : null;
+    return this.props.includeDetailsLink ? caseDetailsColumnFunction(this.props.userRole) : null;
   }
 
-  actionNameOfTask = (task) => CO_LOCATED_ADMIN_ACTIONS[task.label] || _.startCase(task.label)
-
   caseTaskColumn = () => {
-    return this.props.includeTask ? {
-      header: COPY.CASE_LIST_TABLE_TASKS_COLUMN_TITLE,
-      enableFilter: true,
-      tableData: this.props.tasks,
-      columnName: 'label',
-      anyFiltersAreSet: true,
-      customFilterLabels: CO_LOCATED_ADMIN_ACTIONS,
-      label: 'Filter by task',
-      valueName: 'label',
-      valueFunction: (task) => this.actionNameOfTask(task),
-      getSortValue: (task) => this.actionNameOfTask(task)
-    } : null;
+    return this.props.includeTask ? caseTaskColumnFunction(this.props.tasks) : null;
   }
 
   caseDocumentIdColumn = () => {

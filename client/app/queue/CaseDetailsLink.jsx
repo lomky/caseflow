@@ -16,7 +16,7 @@ class CaseDetailsLink extends React.PureComponent {
     const { task, userRole } = this.props;
 
     // when searching for a case, we only load appeal info, no tasks
-    if (task && task.status && task.status === 'assigned' && userRole === USER_ROLE_TYPES.colocated) {
+    if (task && task.status && task.status === 'assigned' && userRole && userRole === USER_ROLE_TYPES.colocated) {
       const payload = {
         data: {
           task: {
@@ -43,7 +43,7 @@ class CaseDetailsLink extends React.PureComponent {
     }
 
     const linkStyling = css({
-      fontWeight: (task.status === 'assigned' && userRole === USER_ROLE_TYPES.colocated) ? 'bold' : null
+      fontWeight: (task.status === 'assigned' && userRole && userRole === USER_ROLE_TYPES.colocated) ? 'bold' : null
     });
 
     return <span {...linkStyling} id={`veteran-name-for-task-${task.taskId}`}>
@@ -76,7 +76,7 @@ CaseDetailsLink.propTypes = {
   task: PropTypes.object,
   appeal: PropTypes.object.isRequired,
   disabled: PropTypes.bool,
-  userRole: PropTypes.string.isRequired,
+  userRole: PropTypes.string,
   getLinkText: PropTypes.func,
   onClick: PropTypes.func
 };
